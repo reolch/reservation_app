@@ -159,7 +159,7 @@ async function handleStep3(event, userMessage) {
  * @returns {Promise<Array<Object>>} 予約状況の配列。
  */
 async function getTodayReservationStatusFromFirestore() {
-    const japanStandardTime = new Date().toLocaleString({ timeZone: 'Asia/Tokyo' });
+    const japanStandardTime = new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' });
     const today = new Date(japanStandardTime);
     const month = String(today.getMonth() + 1).padStart(2, '0');
     const day = String(today.getDate()).padStart(2, '0');
@@ -190,7 +190,8 @@ function formatReservationStatus(reservationStatus) {
             const time = `${hour}:${minutes === 0 ? '00' : minutes}`;
             console.log('Current Time Slot:', time); // 現在の時間枠のログ
 
-            const currentTime = new Date();
+            const japanStandardTime = new Date().toLocaleString('ja-JP', { timeZone: 'Asia/Tokyo' });
+            const currentTime = new Date(japanStandardTime);
             currentTime.setHours(hour);
             currentTime.setMinutes(minutes);
             currentTime.setSeconds(0);
