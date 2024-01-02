@@ -23,7 +23,15 @@ const auth = function(req, res, next) {
   next();
 };
 
-app.use(auth);
+app.use((req, res, next) => {
+  if (req.path === '/public') {
+    // Basic認証を適用
+    basicAuthMiddleware(req, res, next);
+  } else {
+    // Basic認証をスキップ
+    next();
+  }
+});
 
 app.use(express.static('public'));
 app.use(json());
