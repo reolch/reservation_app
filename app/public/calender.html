@@ -139,7 +139,7 @@
             }
 
             var calendarEl = document.getElementById('calendar'); // calendarElを取得する
-            fetch('/reservations')
+            fetch('/reservations/calendar')
                 .then(response => response.json())
                 .then(reservations => {
                     console.log('Fetched reservations:', reservations); // デバッグログを追加

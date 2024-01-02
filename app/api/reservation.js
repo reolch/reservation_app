@@ -9,13 +9,13 @@ const firebaseConfigInfo = require('../certificate/firebaseCertificate');
 const firebaseApp = initializeApp(firebaseConfigInfo);
 const firestore = getFirestore(firebaseApp);
 
-router.get('/reservation', (req, res) => {
-    console.log('GET /reservation');
+router.get('/', (req, res) => {
+    console.log('GET /');
     res.sendFile(path.join(__dirname, '..', 'public', 'reservation.html'));
 });
 
-router.post('/reservation', async (req, res) => {
-    console.log('POST /reservation: ', req.body);
+router.post('/', async (req, res) => {
+    console.log('POST /: ', req.body);
     try {
         const reservationData = req.body;
         const docRef = await addDoc(collection(firestore, 'reservations'), reservationData);
@@ -27,8 +27,8 @@ router.post('/reservation', async (req, res) => {
     }
 });
 
-router.get('/reservation-get', async (req, res) => {
-    console.log('GET /reservation-get: ', req.query);
+router.get('/all', async (req, res) => {
+    console.log('GET /all: ', req.query);
     const date = req.query.date;
 
     try {
@@ -45,7 +45,7 @@ router.get('/reservation-get', async (req, res) => {
     }
 });
 
-router.get('/reservations', async (req, res) => {
+router.get('/calendar', async (req, res) => {
     console.log('GET /reservations');
     try {
         const snapshot = await getDocs(collection(firestore, 'reservations'));
@@ -58,8 +58,8 @@ router.get('/reservations', async (req, res) => {
     }
 });
 
-router.get('/reservation-check', async (req, res) => {
-    console.log('GET /reservation-check: ', req.query);
+router.get('/check', async (req, res) => {
+    console.log('GET /check: ', req.query);
     const { date, startTime, endTime } = req.query;
 
     if (!date || !startTime || !endTime) {

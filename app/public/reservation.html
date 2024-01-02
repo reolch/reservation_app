@@ -123,64 +123,6 @@
         }
     </style>
     <script>
-        // document.addEventListener('DOMContentLoaded', function () {
-        //     const taskTypeSelect = document.getElementById('taskType');
-        //     const reservationStartTime = document.getElementById('reservationStartTime');
-        //     const reservationEndTime = document.getElementById('reservationEndTime');
-        //     const reservationDate = document.getElementById('reservationDate');
-        //     const reservationTable = document.getElementById('reservationTable');
-
-        //     // taskTypeSelect.addEventListener('change', function () {
-        //     //     const selectedTaskType = this.value;
-        //     //     let timeOptions = '';
-
-        //     //     // if (selectedTaskType === 'A') {
-        //     //     //     // 整体の場合
-        //     //     //     timeOptions = generateTimeOptions(15, 30, 60);
-        //     //     // } else if (selectedTaskType === 'B') {
-        //     //     //     // パーソナルジムの場合
-        //     //     //     timeOptions = generateTimeOptions(15, 60, 60);
-        //     //     // }
-
-        //     //     reservationStartTime.innerHTML = timeOptions;
-        //     //     reservationEndTime.innerHTML = timeOptions;
-        //     // });
-
-        //     // ページが読み込まれたときにchangeイベントを発火させる
-        //     taskTypeSelect.dispatchEvent(new Event('change'));
-
-        //     taskTypeSelect.addEventListener('change', updateReservationTable);
-        //     reservationDate.addEventListener('change', updateReservationTable);
-
-        //     function updateReservationTable() {
-        //         const selectedTaskType = taskTypeSelect.value;
-        //         const selectedDate = reservationDate.value;
-
-        //         fetch(`https://astronquts.com:3000/reservation-get?date=${selectedDate}&type=${selectedTaskType}`)
-        //             .then(response => response.json())
-        //             .then(data => {
-        //                 let tableContent = '';
-        //                 console.log(data);
-        //                 for (let i = 0; i < 24; i++) {
-        //                     for (let j = 0; j < 4; j++) {
-        //                         const time = (i < 10 ? '0' : '') + i + ':' + (j * 15 < 10 ? '0' : '') + j * 15;
-        //                         const isReserved = data.reservations.includes(time);
-        //                         tableContent += `<tr><td>${time}</td><td>${isReserved ? '×' : '〇'}</td>`;
-        //                         if (!isReserved) {
-        //                             // 予約がない場合のみボタンを追加
-        //                             tableContent += `<td><button class="btn btn-primary" onclick="reserve('${time}')">予約</button></td>`;
-        //                         }
-        //                         tableContent += `</tr>`;
-        //                     }
-        //                 }
-        //                 reservationTable.innerHTML = tableContent;
-        //             });
-        //     }
-
-        //     // ページが読み込まれたときに表を更新する
-        //     updateReservationTable();
-        // });
-
         function generateTimeOptions(interval, min, max) {
             let options = '';
             for (let i = min; i <= max; i += interval) {
@@ -200,12 +142,12 @@
             const taskType = document.getElementById('taskType').value;
 
             // 重複確認
-            fetch(`https://astronquts.com:3000/reservation-check?date=${reservationDate}&startTime=${reservationStartTime}&endTime=${reservationEndTime}&type=${taskType}`)
+            fetch(`https://astronquts.com:3000/reservations/check?date=${reservationDate}&startTime=${reservationStartTime}&endTime=${reservationEndTime}&type=${taskType}`)
                 .then(response => response.json())
                 .then(data => {
                     if (data.isAvailable) {
                         // 予約可能な場合
-                        fetch('https://astronquts.com:3000/reservation', {
+                        fetch('https://astronquts.com:3000/reservations', {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',

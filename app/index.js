@@ -14,7 +14,7 @@ app.use(express.static('public'));
 app.use(json());
 
 // ルーティングの設定
-app.use('/', reservation);
+app.use('/reservations', reservation);
 app.use('/', calendarRouter);
 app.use('/', lineRouter);
 
