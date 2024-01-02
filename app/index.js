@@ -2,6 +2,7 @@ const fs = require('fs');
 const https = require('https');
 const express = require('express');
 const { json } = require('body-parser');
+const basicAuth = require('basic-auth');
 
 const reservation = require('./api/reservation');
 const calendarRouter = require('./api/calendar');
@@ -9,6 +10,20 @@ const lineRouter = require('./api/line');
 
 const port = 3000;
 const app = express();
+
+const auth = function(req, res, next) {
+  const user = basicAuth(req);
+
+  if (!user || user.name !== 'yusei' || user.pass !== 'yusei0207') {
+    res.set('WWW-Authenticate', 'Basic realm="401"');
+    res.status(401).send('Authentication required.');
+    return;
+  }
+
+  next();
+};
+
+app.use(auth);
 
 app.use(express.static('public'));
 app.use(json());
