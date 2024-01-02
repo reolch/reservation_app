@@ -63,28 +63,22 @@
 
         .sidebar li {
             margin-bottom: 16px;
-            /* リストアイテムのマージンを追加 */
         }
 
         .sidebar a {
             text-decoration: none;
             color: #007bff;
-            /* リンクのカラーを変更 */
         }
 
         .sidebar a:hover {
             text-decoration: underline;
-            /* ホバー時の下線を追加 */
         }
 
         .hamburger-menu {
             display: none;
             position: absolute;
             top: 16px;
-            /* 上部からの位置を調整 */
             right: 16px;
-            /* 右端からの位置を調整 */
-            /* その他のスタイル */
         }
 
         .hamburger-menu span {
@@ -130,19 +124,17 @@
         document.addEventListener('DOMContentLoaded', function () {
             let calSettings;
 
-            //他の設定追加したくなったときように、objectにしてみた。
-            //768pxで分岐させてみました。
             if (window.innerWidth < 768) {
                 calSettings = { initialView: 'listMonth' };
             } else {
                 calSettings = { initialView: 'dayGridMonth' };
             }
 
-            var calendarEl = document.getElementById('calendar'); // calendarElを取得する
+            var calendarEl = document.getElementById('calendar');
             fetch('/reservations/calendar')
                 .then(response => response.json())
                 .then(reservations => {
-                    console.log('Fetched reservations:', reservations); // デバッグログを追加
+                    console.log('Fetched reservations:', reservations);
                     var calendar = new FullCalendar.Calendar(calendarEl, {
                         titleFormat: { year: 'numeric', month: 'long' },
                         initialView: calSettings.initialView,
@@ -183,8 +175,8 @@
                         eventClick: (e) => {
                             console.log("eventClick:", e.event.title);
                         },
-                        eventDidMount: (e) => {// カレンダーに配置された時のイベント
-                            tippy(e.el, {// TippyでTooltipを設定する
+                        eventDidMount: (e) => {
+                            tippy(e.el, {
                                 content: `
                                 ${e.event.title}様<br>
                                 ${e.event.extendedProps.description}<br>
@@ -196,7 +188,7 @@
                     calendar.render();
                 })
                 .catch(error => {
-                    console.error('Error fetching reservations:', error); // エラーログを追加
+                    console.error('Error fetching reservations:', error);
                 });
 
             document.querySelector('.hamburger-menu').addEventListener('click', function () {

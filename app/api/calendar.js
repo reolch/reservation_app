@@ -2,15 +2,15 @@ const path = require('path');
 const express = require('express');
 const calendarRouter = express.Router();
 
+const reservationHandlers = require('../services/reservationService');
+
 calendarRouter.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'public', 'calender.html'));
 });
 
 calendarRouter.get('/', async (req, res) => {
     try {
-        const snapshot = await getDocs(collection(firestore, 'reservations'));
-        const reservations = snapshot.docs.map(doc => doc.data());
-        const calendar = generateCalendar(reservations);
+        const calendar = generateCalendar(reservationHandlers.getAllReservations);
         console.log(calendar)
         res.render(path.join(__dirname, '..', 'public', 'reservation.html'), { calendar });
     } catch (error) {

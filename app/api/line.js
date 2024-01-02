@@ -1,8 +1,7 @@
 const express = require('express');
 const lineRouter = express.Router();
 
-// lineHandlers.js から handleEvent 関数をインポート
-const lineHandlers = require('../services/lineHandlers');
+const lineHandlers = require('../services/lineService');
 
 lineRouter.post('/', async (req, res) => {
     try {

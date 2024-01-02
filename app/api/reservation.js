@@ -2,7 +2,7 @@ const express = require('express');
 const path = require('path');
 const router = express.Router();
 
-const reservationHandlers = require('../services/reservationHandlers');
+const reservationHandlers = require('../services/reservationService');
 
 router.get('/', (req, res) => {
     console.log('GET /');
@@ -21,7 +21,7 @@ router.get('/all', async (req, res) => {
 
 router.get('/calendar', async (req, res) => {
     console.log('GET /reservations: ', req.query);
-    await reservationHandlers.getCalendar(req, res);
+    await reservationHandlers.getAllReservations(req, res);
 });
 
 router.get('/check', async (req, res) => {
