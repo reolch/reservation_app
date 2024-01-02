@@ -15,8 +15,8 @@ app.use(json());
 
 // ルーティングの設定
 app.use('/reservations', reservation);
-app.use('/', calendarRouter);
-app.use('/', lineRouter);
+app.use('/calendar', calendarRouter);
+app.use('/line', lineRouter);
 
 // SSL証明書のファイルパスを指定
 const privateKey = fs.readFileSync('./certificate/astronquts.com.key', 'utf8');

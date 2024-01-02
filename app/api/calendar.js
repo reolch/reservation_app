@@ -2,11 +2,11 @@ const path = require('path');
 const express = require('express');
 const calendarRouter = express.Router();
 
-calendarRouter.get('/calendar', (req, res) => {
+calendarRouter.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '..', 'public', 'calender.html'));
 });
 
-calendarRouter.get('/calendar', async (req, res) => {
+calendarRouter.get('/', async (req, res) => {
     try {
         const snapshot = await getDocs(collection(firestore, 'reservations'));
         const reservations = snapshot.docs.map(doc => doc.data());
