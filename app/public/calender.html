@@ -167,6 +167,10 @@
     <script src='https://unpkg.com/tippy.js@6.3.1/dist/tippy-bundle.umd.min.js'></script>
     <script>
 
+        function showAlert() {
+            alert('ボタンがクリックされました！');
+        }
+
         function fetchCustomers() {
             fetch('https://astronquts.com:3000/customers')
                 .then(response => response.json())
@@ -243,17 +247,30 @@
                 let calendar = new FullCalendar.Calendar(calendarEl, {
                     initialView: 'listMonth',
                     events: events,
-                    eventClick: async function (info) {
-                        // モーダルウィンドウにイベントデータをセット
-                        // モーダルに渡したinfoを初期値として設定
-                        document.getElementById('editEventModal').querySelector('#customerList').value = info.event.extendedProps.customerId;
-                        document.getElementById('editEventModal').querySelector('#taskType').value = info.event.extendedProps.taskType;
-                        document.getElementById('editEventModal').querySelector('#reservationDate').value = info.event.startStr;
-                        document.getElementById('editEventModal').querySelector('#reservationStartTime').value = info.event.startStr.split('T')[1];
-                        document.getElementById('editEventModal').querySelector('#reservationDuration').value = (info.event.end - info.event.start) / 60000;
-                        var modal = new bootstrap.Modal(document.getElementById('editEventModal'));
-                        modal.show();
-                    }
+                    eventClick: function (info) {
+                        // クリックされたイベントを削除する
+                        if (confirm('このイベントを削除しますか？')) {
+                            // info.event.id を使用してイベントIDを取得し、バックエンドに送信する
+                            var eventId = info.event.id;
+
+                            // イベントを削除するためのAPIリクエストを送信
+                            fetch('/reservations/' + eventId, {
+                                method: 'DELETE',
+                            })
+                                .then(function (response) {
+                                    if (response.ok) {
+                                        // イベントの削除が成功した場合、カレンダーからも削除する
+                                        info.event.remove();
+                                        alert('イベントが削除されました');
+                                    } else {
+                                        alert('イベントの削除中にエラーが発生しました');
+                                    }
+                                })
+                                .catch(function (error) {
+                                    console.error('エラー:', error);
+                                });
+                        }
+                    },
                 });
 
                 // カレンダーをレンダリング
@@ -263,65 +280,23 @@
             }
         });
 
-        function setEventDataToModal(event) {
-            document.getElementById('customerList').value = event.extendedProps.customerId || ''; // 顧客ID
-            document.getElementById('taskType').value = event.extendedProps.taskType || ''; // タスクの種類
-            document.getElementById('reservationDate').value = event.startStr.split('T')[0]; // 予約日
-            document.getElementById('reservationStartTime').value = event.startStr.split('T')[1].substring(0, 5); // 開始時間
-            document.getElementById('reservationDuration').value = calculateDuration(event.start, event.end); // 予約時間
-            document.getElementById('editEventId').value = event.id; // イベントID
-        }
-
-
-        async function handleDelete() {
-            const eventId = document.getElementById('editEventId').value;
+        async function handleDelete(id) {
 
             if (confirm("本当にこの予約を削除しますか？")) {
-                const response = await fetch(`/reservations/${eventId}`, {
+                const response = await fetch(`/reservations/${id}`, {
                     method: 'DELETE'
                 });
 
                 if (response.ok) {
                     alert("予約が削除されました");
-                    $('#editEventModal').modal('hide');
+                    return true;
                     // ここでカレンダーからイベントを削除する
                 } else {
                     alert("エラーが発生しました");
+                    return false;
                 }
             }
         }
-
-
-        async function handleSave() {
-            const eventId = document.getElementById('editEventId').value;
-            const customerId = document.getElementById('customerList').value;
-            const taskType = document.getElementById('taskType').value;
-            const reservationDate = document.getElementById('reservationDate').value;
-            const reservationStartTime = document.getElementById('reservationStartTime').value;
-            const reservationDuration = document.getElementById('reservationDuration').value;
-
-            // ここでAPIリクエストを行ってデータを更新する
-            const response = await fetch(`/reservations/${eventId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    CustomerID: customerId,
-                    Date: reservationDate,
-                    StartTime: reservationStartTime,
-                    Duration: reservationDuration,
-                    TaskType: taskType
-                })
-            });
-
-            if (response.ok) {
-                alert("予約が更新されました");
-                $('#editEventModal').modal('hide');
-                // ここでカレンダーを更新する
-            } else {
-                alert("エラーが発生しました");
-            }
-        }
-
     </script>
 
     </script>
@@ -343,62 +318,6 @@
         </ul>
     </div>
     <div id='calendar'></div>
-    <input type="hidden" id="editEventId">
-    <!-- 編集用モーダルウィンドウ -->
-    <div class="modal" id="editEventModal">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">イベント編集</h5>
-                    <button type="button" class="close" data-bs-dismiss="modal">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <!-- モーダルの内容 -->
-                    <label for="customerList" class="form-label">顧客:</label>
-                    <select class="form-select" id="customerList" name="customerList">
-                        <!-- 顧客の選択肢がここに追加されます -->
-                    </select>
-
-                    <div class="mb-3">
-                        <label for="taskType" class="form-label">種類:</label>
-                        <select class="form-select" id="taskType" name="taskType">
-                            <option value="A">整体</option>
-                            <option value="B">パーソナルジム</option>
-                            <option value="C">パーソナルジムx整体</option>
-                        </select>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="reservationDate" class="form-label">予約日:</label>
-                        <input type="date" class="form-control" id="reservationDate" name="reservationDate" required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="reservationStartTime" class="form-label">開始時間:</label>
-                        <input type="time" id="reservationStartTime" name="reservationStartTime" class="time-input"
-                            required>
-                    </div>
-
-                    <div class="mb-3">
-                        <label for="reservationDuration" class="form-label">予約時間:</label>
-                        <select class="form-select" id="reservationDuration" name="reservationDuration">
-                            <option value="30">30分</option>
-                            <option value="90">45分</option>
-                            <option value="60">60分</option>
-                            <option value="90">90分</option>
-                            <option value="120">120分</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">閉じる</button>
-                <button type="button" class="btn btn-primary" onclick=handleDelete()>削除</button>
-                <button type="button" class="btn btn-primary" onclick=handleSave()>保存</button>
-            </div>
-        </div>
-    </div>
-    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
