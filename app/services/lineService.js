@@ -11,6 +11,8 @@ const client = new Client(lineConfig);
 const firebaseApp = initializeApp(firebaseConfigInfo);
 const firestore = getFirestore(firebaseApp);
 
+const firebaseService = require('./firebaseService');
+
 const userStates = {};
 
 /**
@@ -74,6 +76,36 @@ async function handleStep0(event, userMessage) {
             textMessage = '本日の予約はありません。';
         }
         await client.replyMessage(event.replyToken, { type: 'text', text: textMessage });
+    } else if (userMessage === '今月のお休み') {
+        const holidays = await firebaseService.getDocumentsFromCollection('Holidays');
+        if (holidays.length > 0) {
+            // 現在の年月を取得
+            const currentDate = new Date();
+            const currentYear = currentDate.getFullYear();
+            const currentMonth = currentDate.getMonth() + 1; // 月は0から始まるため+1
+
+            // 今月の休日情報をフィルタリング
+            const thisMonthHolidays = holidays.filter(holiday => {
+                const holidayDate = new Date(holiday.docData.Date);
+                return holidayDate.getFullYear() === currentYear && holidayDate.getMonth() + 1 === currentMonth;
+            });
+
+            if (thisMonthHolidays.length > 0) {
+                // 日付を昇順でソート
+                thisMonthHolidays.sort((a, b) => new Date(a.docData.Date) - new Date(b.docData.Date));
+
+                // 休日情報をテキストメッセージに変換して表示
+                let textMessage = '今月の休日情報\n';
+                thisMonthHolidays.forEach(holiday => {
+                    textMessage += `${holiday.docData.Date}: ${holiday.docData.AdditionalInfo}\n`;
+                });
+                await client.replyMessage(event.replyToken, { type: 'text', text: textMessage });
+            } else {
+                await client.replyMessage(event.replyToken, { type: 'text', text: '今月の休日情報はありません。' });
+            }
+        } else {
+            await client.replyMessage(event.replyToken, { type: 'text', text: '休日情報がありません。' });
+        }
     } else if (userMessage === '予約') {
         await client.replyMessage(event.replyToken, { type: 'text', text: '予約しますか？ [はい／いいえ]' });
         userStates[event.source.userId].step = 1;
@@ -135,12 +167,13 @@ async function handleStep3(event, userMessage) {
         try {
             const [date, time] = userStates[event.source.userId].date.split(' ');
             const reservationData = {
-                customerName: userStates[event.source.userId].date,
-                reservationDate: date,
-                reservationStartTime: time,
-                reservationEndTime: time,
+                CustomerID: userStates[event.source.userId].date,
+                Date: date,
+                StartTime: time,
+                EndTime: time,
+                Status: 2
             };
-            const docRef = await addDoc(collection(firestore, 'reservations'), reservationData);
+            const docRef = await addDoc(collection(firestore, 'Appointments'), reservationData);
             console.log('Document written with ID: ', docRef.id);
         } catch (error) {
             console.error('Error saving reservation: ', error);
@@ -165,8 +198,8 @@ async function getTodayReservationStatusFromFirestore() {
     const day = String(today.getDate()).padStart(2, '0');
     const startOfDay = `${today.getFullYear()}-${month}-${day}`;
     console.log('startOfDay: ' + startOfDay);
-    const reservationCollection = collection(firestore, 'reservations');
-    const q = query(reservationCollection, where('reservationDate', '==', startOfDay));
+    const reservationCollection = collection(firestore, 'Appointments');
+    const q = query(reservationCollection, where('Date', '==', startOfDay));
     const querySnapshot = await getDocs(q);
 
     const reservationStatus = querySnapshot.docs.map((doc) => doc.data());
@@ -200,8 +233,8 @@ function formatReservationStatus(reservationStatus) {
             console.log('currentTime:', currentTime); // currentTime のログ
 
             const hasReservation = reservationStatus.some((info) => {
-                const [startHours, startMinutes] = info.reservationStartTime.split(':');
-                const [endHours, endMinutes] = info.reservationEndTime.split(':');
+                const [startHours, startMinutes] = info.StartTime.split(':');
+                const [endHours, endMinutes] = info.EndTime.split(':');
 
                 const startTime = new Date(currentTime);
                 startTime.setHours(parseInt(startHours));

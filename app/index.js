@@ -4,9 +4,14 @@ const express = require('express');
 const { json } = require('body-parser');
 const basicAuth = require('basic-auth');
 
-const reservation = require('./api/reservation');
+const reservation = require('./api/reservations');
 const calendarRouter = require('./api/calendar');
 const lineRouter = require('./api/line');
+const customerRouter = require('./api/customer');
+const customersRouter = require('./api/customers');
+const holidaysRouter = require('./api/holidays');
+const customerRegistrationRouter = require('./api/customerRegistration');
+
 
 const port = 3000;
 const app = express();
@@ -40,6 +45,10 @@ app.use(json());
 app.use('/reservations', reservation);
 app.use('/calendar', calendarRouter);
 app.use('/line', lineRouter);
+app.use('/customer', customerRouter);
+app.use('/customerRegistration', customerRegistrationRouter);
+app.use('/customers', customersRouter);
+app.use('/holidays', holidaysRouter)
 
 // SSL証明書のファイルパスを指定
 const privateKey = fs.readFileSync('./certificate/astronquts.com.key', 'utf8');

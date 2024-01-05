@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>顧客情報表示</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* 一般的なスタイリング */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        /* カード型のコンテナスタイル */
+        /* カード型のコンテナスタイル */
+        .card {
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            background: white;
+            padding: 20px;
+            margin: 20px auto;
+            max-width: 500px;
+            /* カードの最大幅を指定 */
+            text-align: center;
+        }
+
+        /* フォーム要素のスタイル */
+        label {
+            display: block;
+            margin-bottom: .5rem;
+            color: #212529;
+            text-align: left;
+        }
+
+        /* select要素のスタイル */
+        select {
+            display: block;
+            width: 100%;
+            /* selectの幅を100%に設定して余白を取り除く */
+            padding: .375rem .75rem;
+            border: 1px solid #ced4da;
+            border-radius: .375rem;
+            margin-bottom: 1rem;
+            /* 下部のマージン */
+            box-sizing: border-box;
+            /* ボックスサイジングをborder-boxに設定 */
+        }
+
+        /* 顧客詳細情報のスタイル */
+        #customerDetails {
+            text-align: left;
+            /* 左寄せに設定 */
+            margin-top: 20px;
+        }
+
+        /* 顧客情報コンテナのスタイル */
+        .customer-info-container {
+            background: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .customer-info h2 {
+            color: #333;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .customer-info p {
+            color: #666;
+            font-size: 1rem;
+            line-height: 1.6;
+            margin: 5px 0;
+        }
+
+        /* 連絡先情報のスタイル */
+        .contact-info p {
+            margin-left: 20px;
+        }
+
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100%;
+            width: 200px;
+            background-color: #f8f9fa;
+            /* Apple風の背景色 */
+            padding: 20px;
+            box-shadow: 2px 0 5px -2px rgba(0, 0, 0, 0.5);
+            /* 影を追加 */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+        }
+
+        .sidebar h3 {
+            color: #333;
+            /* テキストカラーを変更 */
+            font-size: 1.5rem;
+            /* フォントサイズを大きくする */
+            margin-bottom: 20px;
+            /* 下部のマージンを追加 */
+        }
+
+        .sidebar ul {
+            padding: 0;
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+        }
+
+        .sidebar li {
+            margin-bottom: 10px;
+            /* リストアイテムのマージンを追加 */
+        }
+
+        .sidebar a {
+            text-decoration: none;
+            color: #007bff;
+            /* リンクのカラーを変更 */
+        }
+
+        .sidebar a:hover {
+            text-decoration: underline;
+            /* ホバー時の下線を追加 */
+        }
+
+        .hamburger-menu {
+            display: none;
+            position: absolute;
+            top: 16px;
+            /* 上部からの位置を調整 */
+            right: 16px;
+            /* 右端からの位置を調整 */
+            /* その他のスタイル */
+        }
+
+        .hamburger-menu span {
+            display: block;
+            width: 25px;
+            height: 3px;
+            margin: 5px auto;
+            background-color: #333;
+        }
+
+        /* メディアクエリはそのまま */
+        @media (max-width: 768px) {
+            .card {
+                width: 90%;
+                margin: 20px auto;
+            }
+
+            body {
+                overflow: hidden;
+            }
+
+            .sidebar {
+                position: static;
+                width: 100%;
+                height: auto;
+                display: none;
+            }
+
+            .sidebar.active {
+                display: block;
+            }
+
+            .hamburger-menu {
+                display: block;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="hamburger-menu">
+        <span></span>
+        <span></span>
+        <span></span>
+    </div>
+    <div class="sidebar">
+        <h3>Menu</h3>
+        <ul>
+            <li><a href="/calendar">カレンダー</a></li>
+            <li><a href="/reservations">予約ページ</a></li>
+            <li><a href="/customerRegistration">顧客登録</a></li>
+            <li><a href="/customer">顧客情報</a></li>
+        </ul>
+    </div>
+    <div class="container mt-5">
+        <h1 class="mb-4">顧客情報</h1>
+        <div class="card p-4">
+            <div class="mb-3">
+                <label for="customerList">顧客選択:</label>
+                <select id="customerList">
+                    <option value="">選択してください</option>
+                    <!-- 顧客のオプションがここに追加されます -->
+                </select>
+            </div>
+            <div class="mb-3">
+                <div id="customerDetails">
+                    <!-- 顧客情報がここに表示されます -->
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // JavaScriptコード
+        // 以前のメッセージで述べたfetchCustomersとdisplayCustomerInfo関数をここに追加
+        document.addEventListener('DOMContentLoaded', function () {
+            fetchCustomers();
+            document.getElementById('customerList').addEventListener('change', displayCustomerInfo);
+            document.querySelector('.hamburger-menu').addEventListener('click', function () {
+                document.querySelector('.sidebar').classList.toggle('active');
+            });
+        });
+
+        function fetchCustomers() {
+            fetch('https://astronquts.com:3000/customers')
+                .then(response => response.json())
+                .then(customers => {
+                    const customerList = document.getElementById('customerList');
+                    customers.forEach(customer => {
+                        const option = document.createElement('option');
+                        option.value = customer.docId; // 顧客の識別子
+                        option.textContent = customer.docData.Name; // 顧客名
+                        customerList.appendChild(option);
+                    });
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        function displayCustomerInfo() {
+            const selectedCustomerId = document.getElementById('customerList').value;
+            fetch(`https://astronquts.com:3000/customers/${selectedCustomerId}`)
+                .then(response => response.json())
+                .then(customerInfo => {
+                    const detailsDiv = document.getElementById('customerDetails');
+                    detailsDiv.innerHTML = `
+                <div class="customer-info-container">
+                    <h2>詳細情報</h2>
+                    <div class="customer-info">
+                        <p><strong>名前:</strong> ${customerInfo.docData.Name}</p>
+                        <p><strong>住所:</strong> 〒${customerInfo.docData.Address.PostalCode} ${customerInfo.docData.Address.City} ${customerInfo.docData.Address.Street}</p>
+                        <p><strong>生年月日:</strong> ${customerInfo.docData.Birthdate}</p>
+                        <div class="contact-info">
+                            <p><strong>連絡先:</strong></p>
+                            <p>メールアドレス: ${customerInfo.docData.ContactInfo.Email}</p>
+                            <p>電話番号: ${customerInfo.docData.ContactInfo.Phone}</p>
+                        </div>
+                        <p><strong>性別:</strong> ${customerInfo.docData.Gender === 0 ? '男性' : '女性'}</p>
+                    </div>
+                </div>
+            `;
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+    </script>
+</body>
+
+</html>

@@ -89,6 +89,53 @@
             background-color: #333;
         }
 
+        .modal-dialog {
+            max-width: 600px;
+            /* モーダルの最大幅を調整 */
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            /* シャドウを追加 */
+        }
+
+        .modal-header,
+        .modal-footer {
+            background-color: #f8f9fa;
+            /* ヘッダーとフッターの背景色 */
+            color: #495057;
+            /* ヘッダーとフッターのテキスト色 */
+        }
+
+        .modal-body {
+            padding: 20px;
+            /* モーダルボディのパディングを調整 */
+        }
+
+        .modal-title {
+            font-weight: bold;
+            /* タイトルのフォントウェイトを変更 */
+        }
+
+        .btn-primary {
+            background-color: #007bff;
+            /* 「保存」ボタンの背景色 */
+            border-color: #007bff;
+            /* 「保存」ボタンのボーダー色 */
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            /* 「閉じる」ボタンの背景色 */
+            border-color: #6c757d;
+            /* 「閉じる」ボタンのボーダー色 */
+        }
+
+        .form-control {
+            border-radius: 0.25rem;
+            /* フォームコントロールの角丸を設定 */
+            border: 1px solid #ced4da;
+            /* フォームコントロールのボーダーを設定 */
+        }
+
+
         @media (max-width: 768px) {
 
             body {
@@ -98,6 +145,7 @@
             #calendar {
                 height: 100vh;
             }
+
             .sidebar {
                 position: static;
                 width: 100%;
@@ -114,87 +162,168 @@
             }
         }
     </style>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js'></script>
     <script src='https://unpkg.com/@popperjs/core@2.9.3/dist/umd/popper.min.js'></script>
     <script src='https://unpkg.com/tippy.js@6.3.1/dist/tippy-bundle.umd.min.js'></script>
     <script>
 
-        document.addEventListener('DOMContentLoaded', function () {
-            let calSettings;
-
-            if (window.innerWidth < 768) {
-                calSettings = { initialView: 'listMonth' };
-            } else {
-                calSettings = { initialView: 'dayGridMonth' };
-            }
-
-            var calendarEl = document.getElementById('calendar');
-            fetch('/reservations/calendar')
+        function fetchCustomers() {
+            fetch('https://astronquts.com:3000/customers')
                 .then(response => response.json())
-                .then(reservations => {
-                    console.log('Fetched reservations:', reservations);
-                    var calendar = new FullCalendar.Calendar(calendarEl, {
-                        titleFormat: { year: 'numeric', month: 'long' },
-                        initialView: calSettings.initialView,
-                        headerToolbar: {
-                            left: '',
-                            center: 'title',
-                            right: 'prev, next'
-                        },
-                        events: reservations.map(reservation => ({
-                            id: "1",
-                            title: reservation.reservationStartTime + ' ' + reservation.customerName,
-                            start: reservation.reservationDate,
-                            end: reservation.reservationEndTime,
-                            description: "",
-                            backgroundColor: "red",
-                            editable: true
-                        })),
-                        dateClick(info) {
-                            var title = prompt('予定のタイトルを入力してください:');
-                            if (title) {
-                                flatpickr(prompt('開始時間を選択してください:'), {
-                                    enableTime: true,
-                                    dateFormat: "Y-m-d H:i",
-                                    onClose: function (selectedDates) {
-                                        if (selectedDates.length > 0) {
-                                            var start = selectedDates[0];
-                                            var newEvent = {
-                                                title: title,
-                                                start: start,
-                                                allDay: false
-                                            };
-                                            calendar.addEvent(newEvent);
-                                        }
-                                    }
-                                });
-                            }
-                        },
-                        eventClick: (e) => {
-                            console.log("eventClick:", e.event.title);
-                        },
-                        eventDidMount: (e) => {
-                            tippy(e.el, {
-                                content: `
-                                ${e.event.title}様<br>
-                                ${e.event.extendedProps.description}<br>
-                                `, allowHTML: true
-                            });
-                        }
+                .then(customers => {
+                    console.log(customers);
+                    const customerList = document.getElementById('customerList');
+                    customers.forEach(customer => {
+                        console.log(customer);
+                        console.log(customer.docId);
+                        const option = document.createElement('option');
+                        option.value = customer.docId; // または顧客の識別子
+                        option.textContent = customer.docData.Name; // 顧客名
+                        customerList.appendChild(option);
                     });
-
-                    calendar.render();
                 })
-                .catch(error => {
-                    console.error('Error fetching reservations:', error);
+                .catch(error => console.error('Error:', error));
+        }
+
+        function convertTimeToISO(date, time) {
+            const dateTime = new Date(`${date}T${time}`);
+            return dateTime.toISOString();
+        }
+
+        document.addEventListener('DOMContentLoaded', async function () {
+            fetchCustomers();
+
+            const calendarEl = document.getElementById('calendar');
+
+            try {
+                // 今月の予約情報を取得
+                const response = await fetch('/reservations/all');
+
+                const reservations = await response.json();
+                console.log(reservations);
+
+                // 予約ごとに顧客情報を取得
+                const events = await Promise.all(reservations.map(async (reservation) => {
+                    const customerResponse = await fetch(`/customers/${reservation.CustomerID}`);
+                    const customer = await customerResponse.json();
+                    console.log(customer);
+
+                    console.log("StartTime:", reservation.StartTime, "EndTime:", reservation.EndTime);
+
+
+                    // 日付形式の変換
+                    // ここで日付と時刻を組み合わせる
+                    const start = convertTimeToISO(reservation.Date, reservation.StartTime);
+                    const end = convertTimeToISO(reservation.Date, reservation.EndTime);
+
+                    let backgroundColor = 'white';
+                    const chiropractic = "A";
+                    const personalTraining = "B";
+                    const chiropracticAndPersonalTraining = "C";
+                    if (reservation.taskType === chiropractic) {
+                        backgroundColor = 'blue';
+                    } else if (reservation.taskType === personalTraining) {
+                        backgroundColor = 'red'
+                    } else if (reservation.taskType === chiropracticAndPersonalTraining) {
+                        backgroundColor = 'yellow'
+                    }
+
+                    console.log('reservation.id: ' + reservation.id);
+
+                    return {
+                        id: reservation.id, // 予約のID
+                        title: customer.docData.Name, // 顧客名
+                        start: start, // 予約開始日時
+                        end: end, // 予約終了日時
+                        backgroundColor: backgroundColor// その他のイベントプロパティ
+                    };
+                }));
+
+                // FullCalendarの初期設定
+                let calendar = new FullCalendar.Calendar(calendarEl, {
+                    initialView: 'listMonth',
+                    events: events,
+                    eventClick: async function (info) {
+                        // モーダルウィンドウにイベントデータをセット
+                        // モーダルに渡したinfoを初期値として設定
+                        document.getElementById('editEventModal').querySelector('#customerList').value = info.event.extendedProps.customerId;
+                        document.getElementById('editEventModal').querySelector('#taskType').value = info.event.extendedProps.taskType;
+                        document.getElementById('editEventModal').querySelector('#reservationDate').value = info.event.startStr;
+                        document.getElementById('editEventModal').querySelector('#reservationStartTime').value = info.event.startStr.split('T')[1];
+                        document.getElementById('editEventModal').querySelector('#reservationDuration').value = (info.event.end - info.event.start) / 60000;
+                        var modal = new bootstrap.Modal(document.getElementById('editEventModal'));
+                        modal.show();
+                    }
                 });
 
-            document.querySelector('.hamburger-menu').addEventListener('click', function () {
-                document.querySelector('.sidebar').classList.toggle('active');
-            });
+                // カレンダーをレンダリング
+                calendar.render();
+            } catch (error) {
+                console.error('Error fetching reservations:', error);
+            }
         });
+
+        function setEventDataToModal(event) {
+            document.getElementById('customerList').value = event.extendedProps.customerId || ''; // 顧客ID
+            document.getElementById('taskType').value = event.extendedProps.taskType || ''; // タスクの種類
+            document.getElementById('reservationDate').value = event.startStr.split('T')[0]; // 予約日
+            document.getElementById('reservationStartTime').value = event.startStr.split('T')[1].substring(0, 5); // 開始時間
+            document.getElementById('reservationDuration').value = calculateDuration(event.start, event.end); // 予約時間
+            document.getElementById('editEventId').value = event.id; // イベントID
+        }
+
+
+        async function handleDelete() {
+            const eventId = document.getElementById('editEventId').value;
+
+            if (confirm("本当にこの予約を削除しますか？")) {
+                const response = await fetch(`/reservations/${eventId}`, {
+                    method: 'DELETE'
+                });
+
+                if (response.ok) {
+                    alert("予約が削除されました");
+                    $('#editEventModal').modal('hide');
+                    // ここでカレンダーからイベントを削除する
+                } else {
+                    alert("エラーが発生しました");
+                }
+            }
+        }
+
+
+        async function handleSave() {
+            const eventId = document.getElementById('editEventId').value;
+            const customerId = document.getElementById('customerList').value;
+            const taskType = document.getElementById('taskType').value;
+            const reservationDate = document.getElementById('reservationDate').value;
+            const reservationStartTime = document.getElementById('reservationStartTime').value;
+            const reservationDuration = document.getElementById('reservationDuration').value;
+
+            // ここでAPIリクエストを行ってデータを更新する
+            const response = await fetch(`/reservations/${eventId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    CustomerID: customerId,
+                    Date: reservationDate,
+                    StartTime: reservationStartTime,
+                    Duration: reservationDuration,
+                    TaskType: taskType
+                })
+            });
+
+            if (response.ok) {
+                alert("予約が更新されました");
+                $('#editEventModal').modal('hide');
+                // ここでカレンダーを更新する
+            } else {
+                alert("エラーが発生しました");
+            }
+        }
+
+    </script>
+
     </script>
 </head>
 
@@ -209,10 +338,69 @@
         <ul>
             <li><a href="/calendar">カレンダー</a></li>
             <li><a href="/reservations">予約ページ</a></li>
+            <li><a href="/customerRegistration">顧客登録</a></li>
+            <li><a href="/customer">顧客情報</a></li>
         </ul>
     </div>
     <div id='calendar'></div>
-    <div id='calendar-modal'></div>
+    <input type="hidden" id="editEventId">
+    <!-- 編集用モーダルウィンドウ -->
+    <div class="modal" id="editEventModal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">イベント編集</h5>
+                    <button type="button" class="close" data-bs-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <!-- モーダルの内容 -->
+                    <label for="customerList" class="form-label">顧客:</label>
+                    <select class="form-select" id="customerList" name="customerList">
+                        <!-- 顧客の選択肢がここに追加されます -->
+                    </select>
+
+                    <div class="mb-3">
+                        <label for="taskType" class="form-label">種類:</label>
+                        <select class="form-select" id="taskType" name="taskType">
+                            <option value="A">整体</option>
+                            <option value="B">パーソナルジム</option>
+                            <option value="C">パーソナルジムx整体</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="reservationDate" class="form-label">予約日:</label>
+                        <input type="date" class="form-control" id="reservationDate" name="reservationDate" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="reservationStartTime" class="form-label">開始時間:</label>
+                        <input type="time" id="reservationStartTime" name="reservationStartTime" class="time-input"
+                            required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="reservationDuration" class="form-label">予約時間:</label>
+                        <select class="form-select" id="reservationDuration" name="reservationDuration">
+                            <option value="30">30分</option>
+                            <option value="90">45分</option>
+                            <option value="60">60分</option>
+                            <option value="90">90分</option>
+                            <option value="120">120分</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">閉じる</button>
+                <button type="button" class="btn btn-primary" onclick=handleDelete()>削除</button>
+                <button type="button" class="btn btn-primary" onclick=handleSave()>保存</button>
+            </div>
+        </div>
+    </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
 </html>
