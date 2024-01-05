@@ -44,8 +44,6 @@ exports.registerCustomer = async (req, res) => {
     }
 };
 
-
-
 /**
  * 指定されたコレクションからドキュメントを取得する汎用関数
  * @param {string} collectionName - 取得するコレクションの名前
